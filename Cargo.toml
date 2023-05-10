@@ -1,0 +1,18 @@
+[package]
+name = "chinese_trainer"
+version = "0.1.0"
+authors = [
+    "Kodai Matsumoto <nobita.0918@gmail.com>",
+]
+
+repository = "https://github.com/0918nobita/chinese-trainer"
+readme = "./README.md"
+
+license = "MIT"
+description = "A CLI tool to learn Chinese words"
+
+edition = "2021"
+
+[dependencies]
+sqlx = { version = "0.6.3", features = [ "runtime-tokio-native-tls", "sqlite" ] }
+tokio = { version = "1.28.1", features = [ "rt", "macros" ] }
