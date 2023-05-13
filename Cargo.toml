@@ -14,5 +14,13 @@ description = "A CLI tool to learn Chinese words"
 edition = "2021"
 
 [dependencies]
+axum = "0.6.18"
+hyper = { version = "0.14.26", features = [ "full" ] }
+mime = "0.3.17"
+serde = { version = "1.0.163", features = [ "derive" ] }
+serde_json = "1.0.96"
 sqlx = { version = "0.6.3", features = [ "runtime-tokio-native-tls", "sqlite" ] }
 tokio = { version = "1.28.1", features = [ "rt", "macros" ] }
+tower = "0.4.13"
+tracing = "0.1.37"
+tracing-subscriber = { version = "0.3.17", features = [ "env-filter" ] }

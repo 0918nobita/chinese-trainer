@@ -1,23 +1,95 @@
-use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
+use axum::{
+    http::StatusCode,
+    response::IntoResponse,
+    routing::{get, post},
+    Json, Router,
+};
+use serde::{Deserialize, Serialize};
+use std::net::SocketAddr;
 
-const DB_URL: &str = "sqlite://sqlite.db";
+async fn root() -> &'static str {
+    "Hello, world!"
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+struct User {
+    id: u64,
+    name: String,
+}
+
+#[derive(Deserialize)]
+struct CreateUser {
+    user_name: String,
+}
+
+async fn create_user(Json(payload): Json<CreateUser>) -> impl IntoResponse {
+    let user = User {
+        id: 1337,
+        name: payload.user_name,
+    };
+
+    (StatusCode::CREATED, Json(user))
+}
+
+fn create_app() -> Router {
+    Router::new()
+        .route("/", get(root))
+        .route("/users", post(create_user))
+}
 
 #[tokio::main]
 async fn main() {
-    // データベースが存在するか確認し、存在しない場合は作成する
-    if Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
-        println!("Database already exists")
-    } else {
-        println!("Creating database...");
-        match Sqlite::create_database(DB_URL).await {
-            Ok(_) => println!("Database created successfully"),
-            Err(error) => panic!("error: {}", error),
-        }
+    tracing_subscriber::fmt::init();
+
+    let app = create_app();
+
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+
+    tracing::debug!("Listening on {}", addr);
+
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
+        .expect("Failed to start server");
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use axum::{
+        body::Body,
+        http::{header, Method, Request},
+    };
+    use tower::ServiceExt;
+
+    #[tokio::test]
+    async fn should_return_hello_world() {
+        let request = Request::builder().uri("/").body(Body::empty()).unwrap();
+        let response = create_app().oneshot(request).await.unwrap();
+        let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
+        let body = String::from_utf8(body.to_vec()).unwrap();
+        assert_eq!(body, "Hello, world!");
     }
 
-    // データベースに接続し、テーブルを作成する
-    let db = SqlitePool::connect(DB_URL).await.unwrap();
-
-    let result = sqlx::query("CREATE TABLE IF NOT EXISTS words (id INTEGER PRIMARY KEY NOT NULL, hanzi TEXT NOT NULL, pinyin TEXT NOT NULL, meaning TEXT NOT NULL)").execute(&db).await.unwrap();
-    println!("Result: {:?}", result)
+    #[tokio::test]
+    async fn should_return_user_data() {
+        let request = Request::builder()
+            .uri("/users")
+            .method(Method::POST)
+            .header(header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+            .body(Body::from(r#"{ "user_name": "Kodai" }"#))
+            .unwrap();
+        let response = create_app().oneshot(request).await.unwrap();
+        let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
+        let body = String::from_utf8(body.to_vec()).unwrap();
+        let user: User =
+            serde_json::from_str(&body).expect("Failed to parse response as User struct");
+        assert_eq!(
+            user,
+            User {
+                id: 1337,
+                name: "Kodai".to_owned()
+            }
+        );
+    }
 }

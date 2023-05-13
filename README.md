@@ -28,16 +28,10 @@
 
 文法・用法に関する問題も作成できるようにしたいが、後回し
 
-## プラットフォーム
-
-Windows / macOS / Linux デスクトップアプリケーション
-
-## 価格設定
-
-ビルド済みバイナリを BOOTH で有料販売し、自分でソースコードからビルドする場合は無料とする予定
-
 ## 実装方針
 
-コアのライブラリは Rust で実装し、GUI に関しては [Tauri](https://tauri.app/), [Svelte](https://svelte.jp/) を用いて実装する
+Rust 言語を採用し、Web アプリとして実装します。
 
+バックエンド：[axum](https://github.com/tokio-rs/axum) + [sqlx](https://github.com/launchbadge/sqlx)
 
+フロントエンド：[TypeScript](https://www.typescriptlang.org/) + [SvelteKit](https://kit.svelte.jp/)
