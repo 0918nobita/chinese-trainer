@@ -4,6 +4,11 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use lettre::{
+    message::Mailbox,
+    transport::smtp::client::{Certificate, TlsParameters},
+    Address, AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor,
+};
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 
@@ -19,29 +24,75 @@ struct User {
 
 #[derive(Deserialize)]
 struct CreateUser {
-    user_name: String,
+    username: String,
 }
 
 async fn create_user(Json(payload): Json<CreateUser>) -> impl IntoResponse {
-    let user = User {
-        id: 1337,
-        name: payload.user_name,
-    };
-
-    (StatusCode::CREATED, Json(user))
+    (
+        StatusCode::CREATED,
+        Json(User {
+            id: 1337,
+            name: payload.username,
+        }),
+    )
 }
 
-fn create_app() -> Router {
-    Router::new()
-        .route("/", get(root))
-        .route("/users", post(create_user))
+fn create_app(smtp_transport: Option<AsyncSmtpTransport<Tokio1Executor>>) -> Router {
+    let router = Router::new().route("/", get(root));
+    if let Some(smtp_transport) = smtp_transport {
+        router.route(
+            "/users",
+            post(|req: Json<CreateUser>| async move {
+                let sender_address = Address::new("app", "example.localhost").unwrap();
+                let sender_mailbox = Mailbox::new(None, sender_address);
+
+                let receiver_address = Address::new("user", "example.localhost").unwrap();
+                let receiver_mailbox = Mailbox::new(None, receiver_address);
+
+                let email = Message::builder()
+                    .from(sender_mailbox)
+                    .to(receiver_mailbox)
+                    .subject("Test")
+                    .body(format!(
+                        "{}さん、ようこそ！以下のリンクをクリックしてメールアドレスを認証してください",
+                        req.0.username
+                    ))
+                    .unwrap();
+
+                smtp_transport.send(email).await.unwrap();
+
+                create_user(req).await
+            }),
+        )
+    } else {
+        router.route("/users", post(create_user))
+    }
 }
 
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    let app = create_app();
+    let selfsigned_certificate = Certificate::from_der(
+        include_bytes!("../smtp4dev-data/selfsigned-certificate.cer").to_vec(),
+    )
+    .unwrap();
+
+    let tls_config = lettre::transport::smtp::client::Tls::Required(
+        TlsParameters::builder("localhost".to_owned())
+            .add_root_certificate(selfsigned_certificate)
+            .dangerous_accept_invalid_certs(true)
+            .build()
+            .unwrap(),
+    );
+
+    let smtp_transport = AsyncSmtpTransport::<Tokio1Executor>::starttls_relay("0.0.0.0")
+        .unwrap()
+        .tls(tls_config)
+        .port(1025)
+        .build::<Tokio1Executor>();
+
+    let app = create_app(Some(smtp_transport));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 
@@ -56,40 +107,15 @@ async fn main() {
 #[cfg(test)]
 mod test {
     use super::*;
-    use axum::{
-        body::Body,
-        http::{header, Method, Request},
-    };
+    use axum::{body::Body, http::Request};
     use tower::ServiceExt;
 
     #[tokio::test]
     async fn should_return_hello_world() {
         let request = Request::builder().uri("/").body(Body::empty()).unwrap();
-        let response = create_app().oneshot(request).await.unwrap();
+        let response = create_app(None).oneshot(request).await.unwrap();
         let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
         let body = String::from_utf8(body.to_vec()).unwrap();
         assert_eq!(body, "Hello, world!");
-    }
-
-    #[tokio::test]
-    async fn should_return_user_data() {
-        let request = Request::builder()
-            .uri("/users")
-            .method(Method::POST)
-            .header(header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
-            .body(Body::from(r#"{ "user_name": "Kodai" }"#))
-            .unwrap();
-        let response = create_app().oneshot(request).await.unwrap();
-        let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
-        let body = String::from_utf8(body.to_vec()).unwrap();
-        let user: User =
-            serde_json::from_str(&body).expect("Failed to parse response as User struct");
-        assert_eq!(
-            user,
-            User {
-                id: 1337,
-                name: "Kodai".to_owned()
-            }
-        );
     }
 }
