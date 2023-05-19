@@ -3,13 +3,12 @@
 
   let visible = false;
 
-  let value = '';
-
   function getCurrentChar(): [number, string] {
-    const selectionStart = input.selectionStart ?? value.length;
+    const selectionStart = input.selectionStart ?? input.value.length;
+
     return [
       selectionStart - 1,
-      value.substring(selectionStart - 1, selectionStart),
+      input.value.substring(selectionStart - 1, selectionStart),
     ];
   }
 
@@ -25,7 +24,8 @@
     input.focus();
     const [i, currentChar] = getCurrentChar();
     if (currentChar === 'a') {
-      value = value.substring(0, i) + 'ā' + value.substring(i + 1);
+      input.value =
+        input.value.substring(0, i) + 'ā' + input.value.substring(i + 1);
     }
   }
 
@@ -33,7 +33,8 @@
     input.focus();
     const [i, currentChar] = getCurrentChar();
     if (currentChar === 'a') {
-      value = value.substring(0, i) + 'á' + value.substring(i + 1);
+      input.value =
+        input.value.substring(0, i) + 'á' + input.value.substring(i + 1);
     }
   }
 
@@ -41,7 +42,8 @@
     input.focus();
     const [i, currentChar] = getCurrentChar();
     if (currentChar === 'a') {
-      value = value.substring(0, i) + 'ǎ' + value.substring(i + 1);
+      input.value =
+        input.value.substring(0, i) + 'ǎ' + input.value.substring(i + 1);
     }
   }
 
@@ -49,7 +51,44 @@
     input.focus();
     const [i, currentChar] = getCurrentChar();
     if (currentChar === 'a') {
-      value = value.substring(0, i) + 'à' + value.substring(i + 1);
+      input.value =
+        input.value.substring(0, i) + 'à' + input.value.substring(i + 1);
+    }
+  }
+
+  function handleInputEvent(e: InputEvent) {
+    const [i, currentChar] = getCurrentChar();
+
+    if (e.data === '1' && currentChar === 'a') {
+      e.preventDefault();
+      input.value =
+        input.value.substring(0, i) + 'ā' + input.value.substring(i + 1);
+      input.setSelectionRange(i + 1, i + 1);
+      return;
+    }
+
+    if (e.data === '2' && currentChar === 'a') {
+      e.preventDefault();
+      input.value =
+        input.value.substring(0, i) + 'á' + input.value.substring(i + 1);
+      input.setSelectionRange(i + 1, i + 1);
+      return;
+    }
+
+    if (e.data === '3' && currentChar === 'a') {
+      e.preventDefault();
+      input.value =
+        input.value.substring(0, i) + 'ǎ' + input.value.substring(i + 1);
+      input.setSelectionRange(i + 1, i + 1);
+      return;
+    }
+
+    if (e.data === '4' && currentChar === 'a') {
+      e.preventDefault();
+      input.value =
+        input.value.substring(0, i) + 'à' + input.value.substring(i + 1);
+      input.setSelectionRange(i + 1, i + 1);
+      return;
     }
   }
 </script>
@@ -58,9 +97,9 @@
   class="textField"
   type="text"
   placeholder="ピンインを入力してください"
+  on:beforeinput={handleInputEvent}
   on:focusin={focusin}
   bind:this={input}
-  bind:value
 />
 
 {#if visible}
