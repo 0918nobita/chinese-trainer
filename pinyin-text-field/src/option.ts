@@ -1,16 +1,26 @@
-const optionType = Symbol('Option');
+export class Option<T> {
+  private constructor(private inner: T | null) {}
 
-export type Option<T> = {
-    type: typeof optionType;
-    variant: 'some';
-    value: T;
-} | {
-    type: typeof optionType;
-    variant: 'none';
-};
+  public eq(other: Option<T>): boolean {
+    return this.inner === other.inner;
+  }
 
-export const some = <T>(value: T): Option<T> => ({ type: optionType, variant: 'some', value });
+  public map<U>(mapping: (inner: T) => U): Option<U> {
+    if (this.inner === null) return this as unknown as Option<U>;
+    return new Option<U>(mapping(this.inner));
+  }
 
-export const none = <T>(): Option<T> => ({ type: optionType, variant: 'none' });
+  static some<A>(value: A): Option<A> {
+    return new Option(value);
+  }
 
-export const fromNullable = <T>(nullableVal: T | undefined | null): Option<T> => nullableVal !== undefined && nullableVal !== null ? some(nullableVal) : none();
+  static none<A>(): Option<A> {
+    return new Option<A>(null);
+  }
+
+  static fromNullable<A>(nullableValue: A | undefined | null): Option<A> {
+    if (nullableValue === undefined || nullableValue === null)
+      return Option.none();
+    return Option.some(nullableValue);
+  }
+}
