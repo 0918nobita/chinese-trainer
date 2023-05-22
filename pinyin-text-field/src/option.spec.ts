@@ -41,3 +41,12 @@ it('map', () => {
       .eq(Option.none())
   ).toBe(true);
 });
+
+it('do', () => {
+  const x = Option.do()
+    .bind('a', () => Option.some(1))
+    .bind('b', ({ a }) => Option.some(a + 2))
+    .return(({ a, b }) => a + b);
+
+  expect(x.eq(Option.some(4))).toBe(true);
+});
