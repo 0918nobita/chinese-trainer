@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { Option } from './option';
 
@@ -53,9 +53,15 @@ describe('do', () => {
   });
 
   it('when None is returned during execution of method chain', () => {
+    const fn = vi
+      .fn<[{ a: number }], number>()
+      .mockImplementation(({ a }) => a + 7);
+
     const x = Option.do()
       .bind('a', () => Option.none<number>())
-      .return(({ a }) => a + 7);
+      .return(fn);
+
+    expect(fn).toBeCalledTimes(0);
 
     expect(x.eq(Option.none())).toBe(true);
   });
