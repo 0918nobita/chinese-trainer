@@ -71,7 +71,6 @@ export const fromNullable = <A>(
 ): Option<A> =>
   nullableValue === null || nullableValue === undefined
     ? (Option.none as Option<A>)
-    : some(nullableValue);
+    : new Option(nullableValue);
 
-export const Do = (): OptionComputation<{}> =>
-  new OptionComputation(new Option({}));
+export const Do: OptionComputation<{}> = new OptionComputation(new Option({}));

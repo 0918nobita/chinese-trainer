@@ -51,8 +51,7 @@ describe('map', () => {
 
 describe('do', () => {
   it('bind/return', () => {
-    const opt = O.Do()
-      .bind('a', () => O.some(1))
+    const opt = O.Do.bind('a', () => O.some(1))
       .bind('b', ({ a }) => O.some(a + 2))
       .return(({ a, b }) => a + b);
 
@@ -62,9 +61,7 @@ describe('do', () => {
   it('when None is returned during execution of method chain', () => {
     const fn = vi.fn<[{ a: number }], number>(({ a }) => a + 7);
 
-    const opt = O.Do()
-      .bind('a', () => O.none<number>())
-      .return(fn);
+    const opt = O.Do.bind('a', () => O.none<number>()).return(fn);
 
     expect(fn).not.toBeCalled();
 
@@ -72,7 +69,7 @@ describe('do', () => {
   });
 
   it('returnFrom', () => {
-    const opt = O.Do().returnFrom(() => O.some(24));
+    const opt = O.Do.returnFrom(() => O.some(24));
 
     expect(opt.eq(O.some(24))).toBe(true);
   });
