@@ -1,5 +1,7 @@
 # Chinese Trainer
 
+[![codecov](https://codecov.io/gh/0918nobita/chinese-trainer/branch/main/graph/badge.svg?token=MJ94QXFAZ1)](https://codecov.io/gh/0918nobita/chinese-trainer)
+
 中国語の学習を支援するアプリです
 
 ## 実装したい機能
