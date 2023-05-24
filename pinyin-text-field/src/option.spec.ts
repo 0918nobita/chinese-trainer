@@ -34,12 +34,19 @@ describe('eq', () => {
   });
 });
 
-it('map', () => {
-  expect(
-    O.none<number>()
-      .map((x) => x + 1)
-      .eq(O.none())
-  ).toBe(true);
+describe('map', () => {
+  it('map None', () => {
+    const fn = vi.fn<[number], number>((x) => x + 1);
+    const opt = O.none<number>().map(fn);
+
+    expect(opt.eq(O.none())).toBe(true);
+    expect(fn).not.toBeCalled();
+  });
+
+  it('map Some(v)', () => {
+    const opt = O.some(24).map((x) => x / 3);
+    expect(opt.eq(O.some(8))).toBe(true);
+  });
 });
 
 describe('do', () => {
@@ -59,7 +66,7 @@ describe('do', () => {
       .bind('a', () => O.none<number>())
       .return(fn);
 
-    expect(fn).toBeCalledTimes(0);
+    expect(fn).not.toBeCalled();
 
     expect(opt.eq(O.none())).toBe(true);
   });
