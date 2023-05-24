@@ -44,12 +44,12 @@ it('map', () => {
 
 describe('do', () => {
   it('bind/return', () => {
-    const x = Option.do()
+    const opt = Option.do()
       .bind('a', () => Option.some(1))
       .bind('b', ({ a }) => Option.some(a + 2))
       .return(({ a, b }) => a + b);
 
-    expect(x.eq(Option.some(4))).toBe(true);
+    expect(opt.eq(Option.some(4))).toBe(true);
   });
 
   it('when None is returned during execution of method chain', () => {
@@ -57,18 +57,18 @@ describe('do', () => {
       .fn<[{ a: number }], number>()
       .mockImplementation(({ a }) => a + 7);
 
-    const x = Option.do()
+    const opt = Option.do()
       .bind('a', () => Option.none<number>())
       .return(fn);
 
     expect(fn).toBeCalledTimes(0);
 
-    expect(x.eq(Option.none())).toBe(true);
+    expect(opt.eq(Option.none())).toBe(true);
   });
 
   it('returnFrom', () => {
-    const x = Option.do().returnFrom(() => Option.some(24));
+    const opt = Option.do().returnFrom(() => Option.some(24));
 
-    expect(x.eq(Option.some(24))).toBe(true);
+    expect(opt.eq(Option.some(24))).toBe(true);
   });
 });
