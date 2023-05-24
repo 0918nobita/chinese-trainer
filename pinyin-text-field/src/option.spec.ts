@@ -53,9 +53,7 @@ describe('do', () => {
   });
 
   it('when None is returned during execution of method chain', () => {
-    const fn = vi
-      .fn<[{ a: number }], number>()
-      .mockImplementation(({ a }) => a + 7);
+    const fn = vi.fn<[{ a: number }], number>(({ a }) => a + 7);
 
     const opt = Option.do()
       .bind('a', () => Option.none<number>())
