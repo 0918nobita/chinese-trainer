@@ -42,11 +42,27 @@ it('map', () => {
   ).toBe(true);
 });
 
-it('do', () => {
-  const x = Option.do()
-    .bind('a', () => Option.some(1))
-    .bind('b', ({ a }) => Option.some(a + 2))
-    .return(({ a, b }) => a + b);
+describe('do', () => {
+  it('bind/return', () => {
+    const x = Option.do()
+      .bind('a', () => Option.some(1))
+      .bind('b', ({ a }) => Option.some(a + 2))
+      .return(({ a, b }) => a + b);
 
-  expect(x.eq(Option.some(4))).toBe(true);
+    expect(x.eq(Option.some(4))).toBe(true);
+  });
+
+  it('when None is returned during execution of method chain', () => {
+    const x = Option.do()
+      .bind('a', () => Option.none<number>())
+      .return(({ a }) => a + 7);
+
+    expect(x.eq(Option.none())).toBe(true);
+  });
+
+  it('returnFrom', () => {
+    const x = Option.do().returnFrom(() => Option.some(24));
+
+    expect(x.eq(Option.some(24))).toBe(true);
+  });
 });
