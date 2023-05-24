@@ -49,6 +49,28 @@ describe('map', () => {
   });
 });
 
+describe('match', () => {
+  it('None', () => {
+    const ifSome = vi.fn<[number], number>((_x) => 1);
+    const ifNone = vi.fn<[], number>(() => 2);
+    const result = O.none<number>().match(ifSome, ifNone);
+
+    expect(result).toBe(2);
+    expect(ifSome).not.toBeCalled();
+    expect(ifNone).toBeCalledTimes(1);
+  });
+
+  it('Some(v)', () => {
+    const ifSome = vi.fn<[number], number>((_x) => 1);
+    const ifNone = vi.fn<[], number>(() => 2);
+    const result = O.some(42).match(ifSome, ifNone);
+
+    expect(result).toBe(1);
+    expect(ifSome).toBeCalledTimes(1);
+    expect(ifNone).not.toBeCalled();
+  });
+});
+
 describe('fromNullable', () => {
   it('from null', () => {
     const opt = O.fromNullable(null);
@@ -81,7 +103,6 @@ describe('do', () => {
     const opt = O.Do.bind('a', () => O.none<number>()).return(fn);
 
     expect(fn).not.toBeCalled();
-
     expect(opt.eq(O.none())).toBe(true);
   });
 
