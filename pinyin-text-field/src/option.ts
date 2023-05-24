@@ -1,10 +1,10 @@
-export class Option<T> {
-  private constructor(private inner: T | null) {}
+class Option<T> {
+  constructor(private inner: T | null) {}
 
-  static #none = new Option<unknown>(null);
+  static none = new Option<unknown>(null);
 
   bind<U>(f: (inner: T) => Option<U>): Option<U> {
-    return this.inner === null ? (Option.#none as Option<U>) : f(this.inner);
+    return this.inner === null ? (Option.none as Option<U>) : f(this.inner);
   }
 
   eq(other: Option<T>): boolean {
@@ -13,30 +13,12 @@ export class Option<T> {
 
   map<U>(mapping: (inner: T) => U): Option<U> {
     return this.inner === null
-      ? (Option.#none as Option<U>)
-      : Option.some(mapping(this.inner));
+      ? (Option.none as Option<U>)
+      : new Option(mapping(this.inner));
   }
 
   match<U>(ifSome: (inner: T) => U, ifNone: () => U): U {
     return this.inner === null ? ifNone() : ifSome(this.inner);
-  }
-
-  static some<A>(value: A): Option<A> {
-    return new Option(value);
-  }
-
-  static none<A>(): Option<A> {
-    return Option.#none as Option<A>;
-  }
-
-  static fromNullable<A>(nullableValue: A | undefined | null): Option<A> {
-    return nullableValue === undefined || nullableValue === null
-      ? (Option.#none as Option<A>)
-      : Option.some(nullableValue);
-  }
-
-  static do(): OptionComputation<{}> {
-    return new OptionComputation(Option.some({}));
   }
 }
 
@@ -77,3 +59,19 @@ class OptionComputation<T> {
     return this.currentOpt.bind(f);
   }
 }
+
+export type { Option };
+
+export const none = <A>(): Option<A> => Option.none as Option<A>;
+
+export const some = <A>(inner: A): Option<A> => new Option(inner);
+
+export const fromNullable = <A>(
+  nullableValue: A | null | undefined
+): Option<A> =>
+  nullableValue === null || nullableValue === undefined
+    ? (Option.none as Option<A>)
+    : some(nullableValue);
+
+export const Do = (): OptionComputation<{}> =>
+  new OptionComputation(new Option({}));
