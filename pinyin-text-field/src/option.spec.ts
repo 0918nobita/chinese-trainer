@@ -49,6 +49,23 @@ describe('map', () => {
   });
 });
 
+describe('fromNullable', () => {
+  it('from null', () => {
+    const opt = O.fromNullable(null);
+    expect(opt.eq(O.none())).toBe(true);
+  });
+
+  it('from undefined', () => {
+    const opt = O.fromNullable(undefined);
+    expect(opt.eq(O.none())).toBe(true);
+  });
+
+  it('from a value which is neither null nor undefined', () => {
+    const opt = O.fromNullable(24);
+    expect(opt.eq(O.some(24))).toBe(true);
+  });
+});
+
 describe('do', () => {
   it('bind/return', () => {
     const opt = O.Do.bind('a', () => O.some(1))
