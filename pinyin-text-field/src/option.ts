@@ -1,3 +1,5 @@
+import * as R from './result';
+
 /** Optional value */
 class Option<const T> {
   constructor(private inner: T | null) {}
@@ -21,6 +23,10 @@ class Option<const T> {
 
   match<U>(ifSome: (inner: T) => U, ifNone: () => U): U {
     return this.inner === null ? ifNone() : ifSome(this.inner);
+  }
+
+  okOr<const E>(err: E): R.Result<T, E> {
+    return this.inner === null ? R.err(err) : R.ok(this.inner);
   }
 
   unwrapOr(defaultValue: T): T {

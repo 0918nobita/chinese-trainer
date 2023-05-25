@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import * as O from './option';
+import * as R from './result';
 
 describe('eq', () => {
   it('when both are None', () => {
@@ -68,6 +69,18 @@ describe('match', () => {
     expect(result).toBe(1);
     expect(ifSome).toBeCalledTimes(1);
     expect(ifNone).not.toBeCalled();
+  });
+});
+
+describe('okOr', () => {
+  it('None', () => {
+    const result = O.none().okOr('err');
+    expect(result.eq(R.err('err'))).toBe(true);
+  });
+
+  it('Some(v)', () => {
+    const result = O.some(12).okOr('err');
+    expect(result.eq(R.ok(12))).toBe(true);
   });
 });
 
