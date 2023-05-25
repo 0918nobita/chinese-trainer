@@ -1,4 +1,4 @@
-class Option<T> {
+class Option<const T> {
   constructor(private inner: T | null) {}
 
   static none = new Option<unknown>(null);
@@ -20,33 +20,29 @@ class Option<T> {
   match<U>(ifSome: (inner: T) => U, ifNone: () => U): U {
     return this.inner === null ? ifNone() : ifSome(this.inner);
   }
+
+  unwrapOr(defaultValue: T): T {
+    return this.inner === null ? defaultValue : this.inner;
+  }
+
+  unwrapOrElse(f: () => T): T {
+    return this.inner === null ? f() : this.inner;
+  }
 }
 
-class OptionComputation<T> {
+class OptionComputation<const T> {
   constructor(private currentOpt: Option<T>) {}
 
   bind<const Bound extends string, A>(
     bound: Bound,
     f: (inner: T) => Option<A>
-  ): OptionComputation<{
-    [K in Bound | keyof T]: K extends Bound
-      ? A
-      : K extends keyof T
-      ? T[K]
-      : never;
-  }> {
+  ): OptionComputation<T & { [_ in Bound]: A }> {
     return new OptionComputation(
       this.currentOpt.bind((bindings) =>
-        f(bindings).map(
-          (a) =>
-            ({ ...bindings, [bound]: a } as {
-              [K in Bound | keyof T]: K extends Bound
-                ? A
-                : K extends keyof T
-                ? T[K]
-                : never;
-            })
-        )
+        f(bindings).map((a) => {
+          const newEntry = { [bound]: a } as { [_ in Bound]: A };
+          return { ...bindings, ...newEntry };
+        })
       )
     );
   }
@@ -62,11 +58,11 @@ class OptionComputation<T> {
 
 export type { Option };
 
-export const none = <A>(): Option<A> => Option.none as Option<A>;
+export const none = <const A>(): Option<A> => Option.none as Option<A>;
 
-export const some = <A>(inner: A): Option<A> => new Option(inner);
+export const some = <const A>(inner: A): Option<A> => new Option(inner);
 
-export const fromNullable = <A>(
+export const fromNullable = <const A>(
   nullableValue: A | null | undefined
 ): Option<A> =>
   nullableValue === null || nullableValue === undefined

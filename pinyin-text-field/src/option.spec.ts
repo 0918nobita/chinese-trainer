@@ -17,13 +17,13 @@ describe('eq', () => {
 
   it('when lhs is Some(v) and rhs is None', () => {
     const a = O.some(1);
-    const b = O.none<number>();
+    const b = O.none<1>();
     expect(a.eq(b)).toBe(false);
   });
 
   it('when inner values are different', () => {
-    const a = O.some(1);
-    const b = O.some(2);
+    const a = O.some<number>(1);
+    const b = O.some<number>(2);
     expect(a.eq(b)).toBe(false);
   });
 
@@ -68,6 +68,36 @@ describe('match', () => {
     expect(result).toBe(1);
     expect(ifSome).toBeCalledTimes(1);
     expect(ifNone).not.toBeCalled();
+  });
+});
+
+describe('unwrapOr', () => {
+  it('None', () => {
+    const n = O.none<number>().unwrapOr(12);
+    expect(n).toBe(12);
+  });
+
+  it('Some(v)', () => {
+    const n = O.some<number>(7).unwrapOr(12);
+    expect(n).toBe(7);
+  });
+});
+
+describe('unwrapOrElse', () => {
+  it('None', () => {
+    const fn = vi.fn<[], number>(() => 12);
+    const n = O.none<number>().unwrapOrElse(fn);
+
+    expect(fn).toBeCalledTimes(1);
+    expect(n).toBe(12);
+  });
+
+  it('Some(v)', () => {
+    const fn = vi.fn<[], number>(() => 12);
+    const n = O.some<number>(7).unwrapOrElse(fn);
+
+    expect(fn).not.toBeCalled();
+    expect(n).toBe(7);
   });
 });
 
