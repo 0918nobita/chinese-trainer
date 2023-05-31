@@ -56,7 +56,24 @@ $ pnpm exec vitest
 $ pnpm exec vitest --ui
 ```
 
-<!--
+## BFF に関するコード生成
+
+`/protos` ディレクトリ内の `.proto` (Protocol Buffers) ファイルをもとに、`/bff/generated` 以下に gRPC クライアント (Node.js) 用の TypeScript コードを生成します。
+
+```bash
+$ cd bff
+$ ./codegen
+```
+
+## BFF の起動
+
+先に BFF に関するコード生成を実行しておいてください。
+
+```bash
+$ cd bff
+$ pnpm exec ts-node main.ts
+```
+
 ## テスト用 SMTP サーバと Redis の起動
 
 ```bash
@@ -66,6 +83,6 @@ $ docker compose up
 ## アプリケーションサーバの起動
 
 ```bash
+$ cd backend
 $ RUST_LOG=debug cargo run
 ```
--->
