@@ -3,9 +3,18 @@
 		{
 			"path": "."
 		},
+        {
+            "name": "Backend",
+            "path": "backend"
+        },
 		{
+            "name": "BFF",
 			"path": "bff"
-		}
+		},
+        {
+            "name": "Frontend",
+            "path": "frontend"
+        },
 	],
 	"settings": {}
 }

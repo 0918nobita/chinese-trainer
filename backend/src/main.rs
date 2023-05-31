@@ -74,7 +74,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     let selfsigned_certificate = Certificate::from_der(
-        include_bytes!("../smtp4dev-data/selfsigned-certificate.cer").to_vec(),
+        include_bytes!("../../smtp4dev-data/selfsigned-certificate.cer").to_vec(),
     )
     .unwrap();
 

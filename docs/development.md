@@ -38,6 +38,24 @@ $ cd bff
 $ deno run --allow-read --allow-net main.ts
 ```
 
+## フロントエンドの開発サーバの起動
+
+```bash
+$ pnpm exec vite
+```
+
+## フロントエンドのテスト
+
+```bash
+$ pnpm exec vitest
+```
+
+[Vitest UI](https://vitest.dev/guide/ui.html) を利用する場合：
+
+```bash
+$ pnpm exec vitest --ui
+```
+
 <!--
 ## テスト用 SMTP サーバと Redis の起動
 
