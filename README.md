@@ -29,11 +29,3 @@
     - 不正解だった単語すべてを自動選択できる
 
 文法・用法に関する問題も作成できるようにしたいが、後回し
-
-## 実装方針
-
-Rust 言語を採用し、Web アプリとして実装します。
-
-バックエンド：[axum](https://github.com/tokio-rs/axum) + [sqlx](https://github.com/launchbadge/sqlx)
-
-フロントエンド：[TypeScript](https://www.typescriptlang.org/) + [SvelteKit](https://kit.svelte.jp/)
