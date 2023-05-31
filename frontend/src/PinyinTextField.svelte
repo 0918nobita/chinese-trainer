@@ -113,12 +113,6 @@
 {/if}
 
 <style>
-  :root {
-    --pinyin-text-field-slate-100: #f1f5f9;
-    --pinyin-text-field-gray-400: #9ca3af;
-    --pinyin-text-field-blue-300: #93c5fd;
-  }
-
   .textField {
     background-color: transparent;
     border: 2px solid var(--pinyin-text-field-blue-300);

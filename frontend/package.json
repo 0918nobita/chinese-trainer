@@ -2,6 +2,9 @@
   "name": "@0918nobita/chinese-trainer",
   "version": "0.1.0",
   "type": "module",
+  "dependencies": {
+    "graphql-request": "6.1.0"
+  },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "2.2.0",
     "@tsconfig/svelte": "4.0.1",

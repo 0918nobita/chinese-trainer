@@ -35,6 +35,10 @@ importers:
         version: 4.0.0(graphql@16.6.0)
 
   frontend:
+    dependencies:
+      graphql-request:
+        specifier: 6.1.0
+        version: 6.1.0(graphql@16.6.0)
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: 2.2.0

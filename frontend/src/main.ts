@@ -1,6 +1,6 @@
-import PinyinTextField from './PinyinTextField.svelte';
+import Index from './Index.svelte';
 
-const app = new PinyinTextField({
+const app = new Index({
   target: document.getElementById('app')!,
 });
 

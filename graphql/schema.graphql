@@ -6,5 +6,5 @@ type Word {
 }
 
 type Query {
-    Word(id: ID!): Word
+    Word(id: ID!): Word!
 }
