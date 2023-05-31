@@ -11,7 +11,7 @@ message WordRequest {
 
 message WordResponse {
     string id = 1;
-    string simplfied_chinese_characters = 2;
+    string simplified_chinese_characters = 2;
     string pinyin = 3;
     string meaning = 4;
 }

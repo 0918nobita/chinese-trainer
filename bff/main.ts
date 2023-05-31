@@ -40,7 +40,7 @@ async function main() {
         const word = await getWordById(id);
         return {
           id,
-          simplified_chinese_characters: word.getSimplfiedChineseCharacters(),
+          simplified_chinese_characters: word.getSimplifiedChineseCharacters(),
           pinyin: word.getPinyin(),
           meaning: word.getMeaning(),
         };

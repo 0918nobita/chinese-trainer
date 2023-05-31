@@ -22,7 +22,7 @@ impl WordService for MyWordService {
 
         let word = WordResponse {
             id,
-            simplfied_chinese_characters: "你好".to_owned(),
+            simplified_chinese_characters: "你好".to_owned(),
             pinyin: "nĭ hăo".to_owned(),
             meaning: "こんにちは".to_owned(),
         };
