@@ -1,3 +1,10 @@
+type Word {
+    id: ID!
+    simplified_chinese_characters: String!
+    pinyin: String!
+    meaning: String!
+}
+
 type Query {
-    hello: String!
+    Word(id: ID!): Word
 }

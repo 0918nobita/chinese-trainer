@@ -1,0 +1,7 @@
+query getWordById($id: ID!) {
+    Word(id: $id) {
+        simplified_chinese_characters
+        pinyin
+        meaning
+    }
+}

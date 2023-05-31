@@ -25,15 +25,13 @@ $ pnpm i
 
 先に依存 npm パッケージをインストールしておいてください。
 
-`/resolvers-types.d.ts` が生成されます。
-
 ```bash
 $ pnpm exec graphql-codegen
 ```
 
 ## BFF (Backend For Frontend) の起動
 
-先に GraphQL スキーマから TypeScript 型定義 ( `/resolvers-types.d.ts` ) を生成しておいてください。
+先に GraphQL スキーマから TypeScript 型定義を生成しておいてください。
 
 ```bash
 $ cd bff
