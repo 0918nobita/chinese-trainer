@@ -1,0 +1,17 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  dev: pnpm exec vite
+
+  build: pnpm exec vite build
+
+  preview: pnpm exec vite preview
+
+  test: pnpm exec vitest run
+
+  typecheck: pnpm exec tsc --noEmit

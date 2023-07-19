@@ -1,10 +1,11 @@
+import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
+import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 export default defineConfig({
-  plugins: [svelte()],
-  test: {
-    coverage: { reporter: ['json'] },
-    environment: 'happy-dom',
-  },
+    plugins: [react(), vanillaExtractPlugin()],
+    test: {
+        coverage: { reporter: ['json'] },
+        environment: 'happy-dom',
+    },
 });
