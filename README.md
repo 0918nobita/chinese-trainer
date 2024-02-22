@@ -2,7 +2,7 @@
 
 [![codecov](https://codecov.io/gh/0918nobita/chinese-trainer/branch/main/graph/badge.svg?token=MJ94QXFAZ1)](https://codecov.io/gh/0918nobita/chinese-trainer)
 
-中国語の学習を支援するアプリです
+中国語の学習を支援するアプリを作ろうとしています
 
 ## 実装したい機能
 
@@ -29,3 +29,9 @@
     - 不正解だった単語すべてを自動選択できる
 
 文法・用法に関する問題も作成できるようにしたいが、後回し
+
+## データベースの作成
+
+```bash
+$ sqlx database create --database-url "sqlite:./database.sqlite3"
+```

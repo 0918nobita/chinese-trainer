@@ -3,9 +3,5 @@
     "dbaeumer.vscode-eslint",
     "editorconfig.editorconfig",
     "esbenp.prettier-vscode",
-    "graphql.vscode-graphql",
-    "svelte.svelte-vscode",
-    "zixuanchen.vitest-explorer",
-    "zxh404.vscode-proto3"
   ]
 }
