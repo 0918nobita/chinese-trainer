@@ -1,7 +1,47 @@
-use apache_avro::{types::Record, Codec, Schema, Writer};
+use apache_avro::{types::Record, Codec, Reader, Schema, Writer};
+use clap::{Parser, Subcommand};
 use std::fs::File;
 
+#[derive(Parser)]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    Read {},
+    Write {},
+}
+
 fn main() {
+    let cli = Cli::parse();
+
+    match &cli.command {
+        Some(Commands::Read {}) => {
+            read();
+        }
+        Some(Commands::Write {}) => {
+            write();
+        }
+        None => {
+            eprintln!("No subcommand specified");
+            std::process::exit(1);
+        }
+    }
+}
+
+fn read() {
+    let input = File::open("zhCnWords.avro").unwrap();
+
+    let reader = Reader::new(input).unwrap();
+
+    for value in reader {
+        println!("{:?}", value.unwrap());
+    }
+}
+
+fn write() {
     let raw_schema = r#"
         {
             "name": "ZhCnWord",
