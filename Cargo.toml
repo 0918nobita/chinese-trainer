@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 apache-avro = "0.16.0"
 clap = { version = "4.5.1", features = ["derive"] }
+sha2 = "0.10.8"

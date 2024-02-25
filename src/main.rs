@@ -1,5 +1,9 @@
-use apache_avro::{types::Record, Codec, Reader, Schema, Writer};
+use apache_avro::{
+    types::{Record, Value},
+    Codec, Reader, Schema, Writer,
+};
 use clap::{Parser, Subcommand};
+use sha2::Sha256;
 use std::fs::File;
 
 #[derive(Parser)]
@@ -12,6 +16,7 @@ struct Cli {
 enum Commands {
     Read {},
     Write {},
+    Ask {},
 }
 
 fn main() {
@@ -23,6 +28,9 @@ fn main() {
         }
         Some(Commands::Write {}) => {
             write();
+        }
+        Some(Commands::Ask {}) => {
+            ask();
         }
         None => {
             eprintln!("No subcommand specified");
@@ -78,4 +86,24 @@ fn write() {
     writer.append(record_2).unwrap();
 
     writer.flush().unwrap();
+}
+
+fn ask() {
+    let input = File::open("zhCnWords.avro").unwrap();
+
+    let reader = Reader::new(input).unwrap();
+
+    let schema = reader.writer_schema();
+    let fingerprint = schema.fingerprint::<Sha256>();
+    println!("Fingerprint: {}", fingerprint);
+
+    for value in reader {
+        let value = value.unwrap();
+        match value {
+            Value::Record(fields) => {
+                println!("{:?}", fields);
+            }
+            _ => {}
+        }
+    }
 }
