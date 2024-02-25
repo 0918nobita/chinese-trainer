@@ -3,8 +3,9 @@ use apache_avro::{
     Codec, Reader, Schema, Writer,
 };
 use clap::{Parser, Subcommand};
+use mlua::Lua;
 use sha2::Sha256;
-use std::fs::File;
+use std::fs::{self, File};
 
 #[derive(Parser)]
 struct Cli {
@@ -89,9 +90,9 @@ fn write() {
 }
 
 fn ask() {
-    let input = File::open("zhCnWords.avro").unwrap();
+    let words = File::open("zhCnWords.avro").unwrap();
 
-    let reader = Reader::new(input).unwrap();
+    let reader = Reader::new(words).unwrap();
 
     let schema = reader.writer_schema();
     let fingerprint = schema.fingerprint::<Sha256>();
@@ -106,4 +107,19 @@ fn ask() {
             _ => {}
         }
     }
+
+    let lua = Lua::new();
+
+    let greet_func = lua
+        .create_function(|_, name: String| {
+            println!("Hello, {}!", name);
+            Ok(())
+        })
+        .unwrap();
+
+    lua.globals().set("greet", greet_func).unwrap();
+
+    lua.load(fs::read_to_string("script.lua").unwrap())
+        .exec()
+        .unwrap();
 }

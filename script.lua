@@ -1,0 +1,2 @@
+greet 'world'
+greet 'Rust'
