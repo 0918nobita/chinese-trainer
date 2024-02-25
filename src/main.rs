@@ -3,9 +3,11 @@ use apache_avro::{
     Codec, Reader, Schema, Writer,
 };
 use clap::{Parser, Subcommand};
-use mlua::Lua;
 use sha2::Sha256;
-use std::fs::{self, File};
+use std::{
+    fs::{self, File},
+    process,
+};
 
 #[derive(Parser)]
 struct Cli {
@@ -35,7 +37,7 @@ fn main() {
         }
         None => {
             eprintln!("No subcommand specified");
-            std::process::exit(1);
+            process::exit(1);
         }
     }
 }
@@ -68,7 +70,7 @@ fn write() {
         }
     "#;
 
-    let schema = Schema::parse_str(&raw_schema).unwrap();
+    let schema = Schema::parse_str(raw_schema).unwrap();
 
     let file = File::create("zhCnWords.avro").unwrap();
 
@@ -98,26 +100,13 @@ fn ask() {
     let fingerprint = schema.fingerprint::<Sha256>();
     println!("Fingerprint: {}", fingerprint);
 
+    let mut values = Vec::<Value>::new();
+
     for value in reader {
-        let value = value.unwrap();
-        match value {
-            Value::Record(fields) => {
-                println!("{:?}", fields);
-            }
-            _ => {}
-        }
+        values.push(value.unwrap());
     }
 
-    let lua = Lua::new();
-
-    let greet_func = lua
-        .create_function(|_, name: String| {
-            println!("Hello, {}!", name);
-            Ok(())
-        })
-        .unwrap();
-
-    lua.globals().set("greet", greet_func).unwrap();
+    let lua = chinese_trainer::lua();
 
     lua.load(fs::read_to_string("script.lua").unwrap())
         .exec()
