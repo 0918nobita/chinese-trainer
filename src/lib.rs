@@ -1,27 +1,49 @@
-use mlua::{Lua, UserData, UserDataMethods};
+use mlua::{Lua, UserData, UserDataRef};
+use std::ops::Deref;
 
-struct MyStruct(i32);
+#[derive(Debug)]
+struct QuizBundle;
 
-impl UserData for MyStruct {
-    fn add_methods<'lua, M>(methods: &mut M)
-    where
-        M: UserDataMethods<'lua, Self>,
-    {
-        methods.add_method("foo", |_, this, ()| {
-            println!("Inner value: {}", this.0);
-            Ok(())
-        })
-    }
+impl UserData for QuizBundle {}
+
+#[derive(Debug)]
+enum QuizBundleSchedule {
+    Immediate,
+    SpecificDateTime,
+    DateTimeOffset,
 }
 
-pub fn lua() -> Lua {
+impl UserData for QuizBundleSchedule {}
+
+pub fn init_lua() -> Lua {
     let lua = Lua::new();
 
-    let load_user_data_func = lua.create_function(|_, ()| Ok(MyStruct(42))).unwrap();
+    let create_quiz_bundle = lua.create_function(|_, ()| Ok(QuizBundle)).unwrap();
 
-    lua.globals()
-        .set("load_user_data", load_user_data_func)
+    let schedule_quiz_bundle = lua
+        .create_function(
+            |_,
+             (quiz_bundle, schedule): (
+                UserDataRef<'_, QuizBundle>,
+                UserDataRef<'_, QuizBundleSchedule>,
+            )| {
+                println!("Quiz bundle: {:?}", quiz_bundle.deref());
+                println!("Schedule: {:?}", schedule.deref());
+                Ok(())
+            },
+        )
         .unwrap();
 
+    let schedule_immediate = lua.create_userdata(QuizBundleSchedule::Immediate).unwrap();
+
+    let schedule = lua.create_table().unwrap();
+    schedule.set("immediate", schedule_immediate).unwrap();
+
+    let fc = lua.create_table().unwrap();
+    fc.set("create_quiz_bundle", create_quiz_bundle).unwrap();
+    fc.set("schedule", schedule).unwrap();
+    fc.set("schedule_quiz_bundle", schedule_quiz_bundle).unwrap();
+
+    lua.globals().set("fc", fc).unwrap();
     lua
 }

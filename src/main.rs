@@ -106,7 +106,7 @@ fn ask() {
         values.push(value.unwrap());
     }
 
-    let lua = chinese_trainer::lua();
+    let lua = chinese_trainer::init_lua();
 
     lua.load(fs::read_to_string("script.lua").unwrap())
         .exec()

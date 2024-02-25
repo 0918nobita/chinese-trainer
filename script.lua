@@ -1,2 +1,5 @@
-local a = load_user_data()
-a:foo()
+local quiz_bundle = fc.create_quiz_bundle()
+
+local schedule = fc.schedule.immediate
+
+fc.schedule_quiz_bundle(quiz_bundle, schedule)
