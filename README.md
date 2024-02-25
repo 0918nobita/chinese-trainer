@@ -29,9 +29,3 @@
     - 不正解だった単語すべてを自動選択できる
 
 文法・用法に関する問題も作成できるようにしたいが、後回し
-
-## データベースの作成
-
-```bash
-$ sqlx database create --database-url "sqlite:./database.sqlite3"
-```

@@ -1,29 +1,41 @@
-use sqlx::sqlite::SqlitePool;
+use apache_avro::{types::Record, Codec, Schema, Writer};
+use std::fs::File;
 
-#[derive(Debug)]
-struct User {
-    id: i64,
-    name: String,
-    email: String,
-    address: Option<String>,
-    created_at: chrono::NaiveDateTime,
-}
+fn main() {
+    let raw_schema = r#"
+        {
+            "name": "ZhCnWord",
+            "type": "record",
+            "fields": [
+                {
+                    "name": "zhCn",
+                    "type": "string"
+                },
+                {
+                    "name": "jaJp",
+                    "type": "string"
+                }
+            ]
+        }
+    "#;
 
-#[tokio::main]
-async fn main() -> Result<(), sqlx::Error> {
-    dotenv::dotenv().expect("Failex to read .env file");
+    let schema = Schema::parse_str(&raw_schema).unwrap();
 
-    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let file = File::create("zhCnWords.avro").unwrap();
 
-    let pool = SqlitePool::connect(&database_url).await?;
+    let mut writer = Writer::with_codec(&schema, file, Codec::Deflate);
 
-    let users = sqlx::query_as!(User, "SELECT * FROM users")
-        .fetch_all(&pool)
-        .await?;
+    let mut record_1 = Record::new(&schema).unwrap();
+    record_1.put("zhCn", "提高");
+    record_1.put("jaJp", "向上させる");
 
-    for user in users {
-        println!("{:?}", user);
-    }
+    writer.append(record_1).unwrap();
 
-    Ok(())
+    let mut record_2 = Record::new(&schema).unwrap();
+    record_2.put("zhCn", "告诉");
+    record_2.put("jaJp", "伝える");
+
+    writer.append(record_2).unwrap();
+
+    writer.flush().unwrap();
 }
