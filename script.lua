@@ -4,7 +4,7 @@ local store =
         fingerprint = "a1c786768aa62b7395d18286e42a7e4acd5309dfdb72e07a12061fcd6d5eab0b",
     }
 
-local quiz_bundle = fc.create_quiz_bundle()
+local quiz_bundle = fc.create_quiz_bundle(store)
 
 local schedule = fc.schedule.immediate
 

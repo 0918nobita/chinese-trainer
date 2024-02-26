@@ -69,18 +69,17 @@ pub fn init_lua(lua: &Lua) -> mlua::Result<()> {
             values.push(value.unwrap());
         }
 
-        let store = Store {
+        Ok(Store {
             path: path.to_owned(),
             schema,
             values,
-        };
-
-        println!("{:?}", store);
-
-        Ok(store)
+        })
     })?;
 
-    let create_quiz_bundle = lua.create_function(|_, ()| Ok(QuizBundle))?;
+    let create_quiz_bundle = lua.create_function(|_, store: UserDataRef<'_, Store>| {
+        println!("Quiz bundle created: {:?}", store.deref().path);
+        Ok(QuizBundle)
+    })?;
 
     let schedule_quiz_bundle = lua.create_function(
         |_,
@@ -88,8 +87,11 @@ pub fn init_lua(lua: &Lua) -> mlua::Result<()> {
             UserDataRef<'_, QuizBundle>,
             UserDataRef<'_, QuizBundleSchedule>,
         )| {
-            println!("Quiz bundle: {:?}", quiz_bundle.deref());
-            println!("Schedule: {:?}", schedule.deref());
+            println!(
+                "Quiz bundle scheduled: {:?} ({:?})",
+                quiz_bundle.deref(),
+                schedule.deref()
+            );
             Ok(())
         },
     )?;

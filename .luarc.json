@@ -1,0 +1,5 @@
+{
+  "workspace.library": [
+    "./lua-types"
+  ]
+}

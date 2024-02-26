@@ -1,36 +1,45 @@
 use apache_avro::{types::Record, Codec, Schema, Writer};
 use clap::{Parser, Subcommand};
 use mlua::Lua;
-use std::{
-    fs::{self, File},
-    process,
-};
+use std::fs::{self, File};
 
 #[derive(Parser)]
 struct Cli {
     #[command(subcommand)]
-    command: Option<Commands>,
+    command: Commands,
 }
 
 #[derive(Subcommand)]
 enum Commands {
     Write {},
+    /// Execute User Script
     Exec {},
+    Quiz {
+        #[command(subcommand)]
+        command: QuizCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum QuizCommands {
+    /// List available quiz bundles
+    List {},
 }
 
 fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
-        Some(Commands::Write {}) => {
+        Commands::Write {} => {
             write();
         }
-        Some(Commands::Exec {}) => {
+        Commands::Exec {} => {
             exec();
         }
-        None => {
-            eprintln!("No subcommand specified");
-            process::exit(1);
+        Commands::Quiz {
+            command: QuizCommands::List {},
+        } => {
+            quiz_list();
         }
     }
 }
@@ -90,3 +99,5 @@ fn exec() {
         }
     }
 }
+
+fn quiz_list() {}
