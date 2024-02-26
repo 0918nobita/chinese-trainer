@@ -29,7 +29,8 @@
 文法・用法に関する問題も作成できるようにしたいが、後回し
 
 ```bash
+# .avro ファイルの生成
 cargo run -- write
-cargo run -- read
-cargo run -- ask
+# Lua スクリプトの実行
+cargo run -- exec
 ```

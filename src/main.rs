@@ -1,9 +1,6 @@
-use apache_avro::{
-    types::{Record, Value},
-    Codec, Reader, Schema, Writer,
-};
+use apache_avro::{types::Record, Codec, Schema, Writer};
 use clap::{Parser, Subcommand};
-use sha2::Sha256;
+use mlua::Lua;
 use std::{
     fs::{self, File},
     process,
@@ -17,38 +14,24 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    Read {},
     Write {},
-    Ask {},
+    Exec {},
 }
 
 fn main() {
     let cli = Cli::parse();
 
     match &cli.command {
-        Some(Commands::Read {}) => {
-            read();
-        }
         Some(Commands::Write {}) => {
             write();
         }
-        Some(Commands::Ask {}) => {
-            ask();
+        Some(Commands::Exec {}) => {
+            exec();
         }
         None => {
             eprintln!("No subcommand specified");
             process::exit(1);
         }
-    }
-}
-
-fn read() {
-    let input = File::open("zhCnWords.avro").unwrap();
-
-    let reader = Reader::new(input).unwrap();
-
-    for value in reader {
-        println!("{:?}", value.unwrap());
     }
 }
 
@@ -91,24 +74,19 @@ fn write() {
     writer.flush().unwrap();
 }
 
-fn ask() {
-    let words = File::open("zhCnWords.avro").unwrap();
+fn exec() {
+    let lua = Lua::new();
+    chinese_trainer::init_lua(&lua).expect("Failed to initialize Lua runtime");
 
-    let reader = Reader::new(words).unwrap();
+    let src = fs::read_to_string("script.lua").unwrap();
+    let chunk = lua.load(src).set_name("script.lua");
 
-    let schema = reader.writer_schema();
-    let fingerprint = schema.fingerprint::<Sha256>();
-    println!("Fingerprint: {}", fingerprint);
-
-    let mut values = Vec::<Value>::new();
-
-    for value in reader {
-        values.push(value.unwrap());
+    match chunk.exec() {
+        Ok(()) => {
+            println!("Complete");
+        }
+        Err(err) => {
+            eprintln!("Error occurred: {}", err)
+        }
     }
-
-    let lua = chinese_trainer::init_lua();
-
-    lua.load(fs::read_to_string("script.lua").unwrap())
-        .exec()
-        .unwrap();
 }
