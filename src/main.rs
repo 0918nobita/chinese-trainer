@@ -42,7 +42,11 @@ async fn generate_sentence(env: &Env) -> Result<(), reqwest::Error> {
             "messages": [
                 {
                     "role": "user",
-                    "content": "こんにちは、Claude さん。初めて Claude API を介してお話しています。"
+                    "content": r#"\
+                        あなたは中国語の教師です。\
+                        たった今私は「几乎」という単語を知りました。\
+                        この単語を用いた20文字以内の例文を3つ生成し、文字列の配列を表現するJSONとして出力してください。\
+                        JSON以外に言葉は要りません。"#
                 }
             ]
         }))
