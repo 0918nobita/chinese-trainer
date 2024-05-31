@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use indoc::formatdoc;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 #[derive(Debug, Deserialize)]
@@ -31,6 +31,12 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Generate { word: String },
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct GeneratedSentence {
+    ja: String,
+    zh: String,
 }
 
 #[tokio::main]
@@ -105,10 +111,10 @@ async fn generate_sentences(env: &Env, word: &str) -> Result<()> {
 
     let MessageContent::Text { text } = resp.content.first().with_context(|| "empty response")?;
 
-    let sentences = serde_json::from_str::<serde_json::Value>(&format!("[{}", &text))
+    let sentences = serde_json::from_str::<Vec<GeneratedSentence>>(&format!("[{}", &text))
         .with_context(|| "Failed to parse message as JSON")?;
 
-    println!("{}", serde_json::to_string_pretty(&sentences).unwrap());
+    println!("{:?}", sentences);
 
     Ok(())
 }
