@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use indoc::formatdoc;
 use serde::Deserialize;
@@ -6,7 +7,7 @@ use serde_json::json;
 #[derive(Debug, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 enum MessageContent {
-    Text { text: String }
+    Text { text: String },
 }
 
 #[derive(Debug, Deserialize)]
@@ -29,13 +30,11 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    Generate {
-        word: String,
-    },
+    Generate { word: String },
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<()> {
     let env = envy::from_env::<Env>()?;
 
     let cli = Cli::parse();
@@ -47,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn generate_sentences(env: &Env, word: &str) -> Result<(), reqwest::Error> {
+async fn generate_sentences(env: &Env, word: &str) -> Result<()> {
     let json_schema = json!({
         "type": "array",
         "items": {
@@ -85,7 +84,11 @@ async fn generate_sentences(env: &Env, word: &str) -> Result<(), reqwest::Error>
             {
                 "role": "user",
                 "content": prompt
-            }
+            },
+            {
+                "role": "assistant",
+                "content": "[",
+            },
         ],
     });
 
@@ -97,11 +100,13 @@ async fn generate_sentences(env: &Env, word: &str) -> Result<(), reqwest::Error>
         .send()
         .await?
         .json::<MessageResponse>()
-        .await?;
+        .await
+        .with_context(|| "Failed to deserialize HTTP response")?;
 
-    let MessageContent::Text { text } = resp.content.first().unwrap();
+    let MessageContent::Text { text } = resp.content.first().with_context(|| "empty response")?;
 
-    let sentences = serde_json::from_str::<serde_json::Value>(&text).unwrap();
+    let sentences = serde_json::from_str::<serde_json::Value>(&format!("[{}", &text))
+        .with_context(|| "Failed to parse message as JSON")?;
 
     println!("{}", serde_json::to_string_pretty(&sentences).unwrap());
 
