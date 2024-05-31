@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use axum::{routing, Router};
 use clap::{Parser, Subcommand};
 use indoc::formatdoc;
 use serde::{Deserialize, Serialize};
@@ -31,6 +32,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Generate { word: String },
+    Serve,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -47,6 +49,7 @@ async fn main() -> Result<()> {
 
     match &cli.command {
         Commands::Generate { word } => generate_sentences(&env, word).await?,
+        Commands::Serve => serve().await?,
     }
 
     Ok(())
@@ -117,4 +120,18 @@ async fn generate_sentences(env: &Env, word: &str) -> Result<()> {
     println!("{:?}", sentences);
 
     Ok(())
+}
+
+async fn serve() -> Result<()> {
+    let app = Router::new().route("/", routing::get(root));
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
+
+    axum::serve(listener, app)
+        .await
+        .with_context(|| "Failed to start server")
+}
+
+async fn root() -> &'static str {
+    "Hello, world!"
 }

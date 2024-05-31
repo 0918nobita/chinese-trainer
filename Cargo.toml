@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
+axum = "0.7.5"
 clap = { version = "4.5.1", features = ["derive"] }
 envy = "0.4"
 indoc = "2"
