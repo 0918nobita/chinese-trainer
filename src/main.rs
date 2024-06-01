@@ -1,9 +1,36 @@
-use anyhow::{Context, Result};
-use axum::{routing, Router};
+use anyhow::Context;
 use clap::{Parser, Subcommand};
+use hello::{
+    greeter_server::{Greeter, GreeterServer},
+    HelloReply, HelloRequest,
+};
 use indoc::formatdoc;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use tonic::{transport::Server, Request, Response, Status};
+
+pub mod hello {
+    tonic::include_proto!("hello");
+}
+
+#[derive(Debug, Default)]
+pub struct MyGreeter {}
+
+#[tonic::async_trait]
+impl Greeter for MyGreeter {
+    async fn say_hello(
+        &self,
+        request: Request<HelloRequest>,
+    ) -> Result<Response<HelloReply>, Status> {
+        println!("Got a request: {:?}", request);
+
+        let reply = HelloReply {
+            message: format!("Hello, {}!", request.into_inner().name),
+        };
+
+        Ok(Response::new(reply))
+    }
+}
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -31,7 +58,10 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    Generate { word: String },
+    Generate {
+        word: String,
+    },
+    /// Start a gRPC server
     Serve,
 }
 
@@ -42,7 +72,7 @@ struct GeneratedSentence {
 }
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> anyhow::Result<()> {
     let env = envy::from_env::<Env>()?;
 
     let cli = Cli::parse();
@@ -55,7 +85,7 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn generate_sentences(env: &Env, word: &str) -> Result<()> {
+async fn generate_sentences(env: &Env, word: &str) -> anyhow::Result<()> {
     let json_schema = json!({
         "type": "array",
         "items": {
@@ -122,16 +152,14 @@ async fn generate_sentences(env: &Env, word: &str) -> Result<()> {
     Ok(())
 }
 
-async fn serve() -> Result<()> {
-    let app = Router::new().route("/", routing::get(root));
+async fn serve() -> anyhow::Result<()> {
+    let addr = "[::1]:50051".parse()?;
+    let greeter = MyGreeter::default();
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
+    Server::builder()
+        .add_service(GreeterServer::new(greeter))
+        .serve(addr)
+        .await?;
 
-    axum::serve(listener, app)
-        .await
-        .with_context(|| "Failed to start server")
-}
-
-async fn root() -> &'static str {
-    "Hello, world!"
+    Ok(())
 }
