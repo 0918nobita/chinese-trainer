@@ -8,5 +8,5 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[*.json]
+[*.{css,json,mjs,ts,tsx}]
 indent_size = 2
