@@ -34,5 +34,9 @@ cargo run -- generate "如果"
 cargo run -- serve
 
 # 別のセッションで実行する
-grpcurl -plaintext -import-path ./proto -proto hello.proto -d '{"name": "tonic server"}' "[::]:50051" hello.Greeter/SayHello
+grpcurl -plaintext \
+    -import-path ./proto \
+    -proto sentence.proto \
+    -d '{"word": "但是"}' \
+    "[::]:50051" sentence.SentenceService/Generate
 ```
