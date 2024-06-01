@@ -1,4 +1,3 @@
-use super::env::Env;
 use anyhow::Context;
 use indoc::formatdoc;
 use serde::{Deserialize, Serialize};
@@ -18,12 +17,15 @@ struct MessageResponse {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct GeneratedSentence {
-    ja: String,
-    zh: String,
+pub struct GeneratedSentence {
+    pub ja: String,
+    pub zh: String,
 }
 
-pub async fn generate_sentences(env: &Env, word: &str) -> anyhow::Result<()> {
+pub async fn generate_sentences(
+    anthropic_api_key: &str,
+    word: &str,
+) -> anyhow::Result<Vec<GeneratedSentence>> {
     let json_schema = json!({
         "type": "array",
         "items": {
@@ -71,7 +73,7 @@ pub async fn generate_sentences(env: &Env, word: &str) -> anyhow::Result<()> {
 
     let resp = reqwest::Client::new()
         .post("https://api.anthropic.com/v1/messages")
-        .header("x-api-key", &env.anthropic_api_key)
+        .header("x-api-key", anthropic_api_key)
         .header("anthropic-version", "2023-06-01")
         .json(&request_body)
         .send()
@@ -82,10 +84,6 @@ pub async fn generate_sentences(env: &Env, word: &str) -> anyhow::Result<()> {
 
     let MessageContent::Text { text } = resp.content.first().with_context(|| "empty response")?;
 
-    let sentences = serde_json::from_str::<Vec<GeneratedSentence>>(&format!("[{}", &text))
-        .with_context(|| "Failed to parse message as JSON")?;
-
-    println!("{:?}", sentences);
-
-    Ok(())
+    serde_json::from_str::<Vec<GeneratedSentence>>(&format!("[{}", &text))
+        .with_context(|| "Failed to parse message as JSON")
 }

@@ -1,33 +1,14 @@
 use clap::{Parser, Subcommand};
-use hello::{
-    greeter_server::{Greeter, GreeterServer},
-    HelloReply, HelloRequest,
-};
-use learning_chinese::{anthropic::generate_sentences, env::Env};
-use tonic::{transport::Server, Request, Response, Status};
+use learning_chinese::{anthropic::generate_sentences, grpc_server};
+use once_cell::sync::Lazy;
+use serde::Deserialize;
 
-pub mod hello {
-    tonic::include_proto!("hello");
+#[derive(Deserialize)]
+pub struct Env {
+    pub anthropic_api_key: String,
 }
 
-#[derive(Debug, Default)]
-pub struct MyGreeter {}
-
-#[tonic::async_trait]
-impl Greeter for MyGreeter {
-    async fn say_hello(
-        &self,
-        request: Request<HelloRequest>,
-    ) -> Result<Response<HelloReply>, Status> {
-        println!("Got a request: {:?}", request);
-
-        let reply = HelloReply {
-            message: format!("Hello, {}!", request.into_inner().name),
-        };
-
-        Ok(Response::new(reply))
-    }
-}
+static ENV: Lazy<Env> = Lazy::new(|| envy::from_env().unwrap());
 
 #[derive(Parser)]
 struct Cli {
@@ -46,26 +27,16 @@ enum Commands {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let env = envy::from_env::<Env>()?;
-
     let cli = Cli::parse();
 
     match &cli.command {
-        Commands::Generate { word } => generate_sentences(&env, word).await?,
-        Commands::Serve => serve().await?,
+        Commands::Generate { word } => {
+            let sentences = generate_sentences(&ENV.anthropic_api_key, word).await?;
+
+            println!("{:?}", sentences);
+        }
+        Commands::Serve => grpc_server::serve(&ENV.anthropic_api_key).await?,
     }
-
-    Ok(())
-}
-
-async fn serve() -> anyhow::Result<()> {
-    let addr = "[::1]:50051".parse()?;
-    let greeter = MyGreeter::default();
-
-    Server::builder()
-        .add_service(GreeterServer::new(greeter))
-        .serve(addr)
-        .await?;
 
     Ok(())
 }

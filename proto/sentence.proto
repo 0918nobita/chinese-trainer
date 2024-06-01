@@ -1,0 +1,19 @@
+syntax = "proto3";
+package sentence;
+
+service SentenceService {
+    rpc Generate(GenerateSentenceRequest) returns (GenerateSentenceReply);
+}
+
+message GenerateSentenceRequest {
+    string word = 1;
+}
+
+message Sentence {
+    string zh = 1;
+    string ja = 2;
+}
+
+message GenerateSentenceReply {
+    repeated Sentence sentences = 1;
+}

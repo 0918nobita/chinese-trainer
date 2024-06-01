@@ -729,6 +729,7 @@ dependencies = [
  "clap",
  "envy",
  "indoc",
+ "once_cell",
  "prost",
  "reqwest",
  "serde",
