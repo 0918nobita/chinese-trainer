@@ -6,9 +6,10 @@ Anthropic Messages API を用いて例文を生成することができます。
 
 ## 準備
 
-- Rust
-- direnv
-- asdf or mise
+- [Rust](https://rustup.rs/)
+- [direnv](https://github.com/direnv/direnv)
+- [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev/)
+- [gRPC UI](https://github.com/fullstorydev/grpcui)
 - Anthropic の API キー
 
 ``.env`` :

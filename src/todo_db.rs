@@ -3,38 +3,45 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-#[derive(Clone)]
-pub enum Status {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StatusVO {
     Todo,
     Done,
 }
 
-#[derive(Clone)]
-pub struct Todo {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TodoEntity {
     pub id: u64,
     pub text: String,
-    status: Status,
+    status: StatusVO,
 }
 
-impl Todo {
+impl TodoEntity {
     pub fn new(id: u64, text: String) -> Self {
         Self {
             id,
             text,
-            status: Status::Todo,
+            status: StatusVO::Todo,
         }
     }
 
-    pub fn status(&self) -> Status {
+    pub fn status(&self) -> StatusVO {
         self.status.clone()
     }
 }
 
-pub trait TodoRepository: Clone + Send + Sync + 'static {
-    fn get_todo_list(&self) -> Vec<Todo>;
+pub trait TodoRepository: Send + Sync + 'static {
+    fn all(&self) -> Vec<TodoEntity>;
+    fn find(&self, id: u64) -> Option<TodoEntity>;
+    fn create(&self, text: String) -> TodoEntity;
+    fn delete(&self, id: u64) -> Option<()>;
 }
 
-type TodoList = HashMap<u64, Todo>;
+#[derive(Default)]
+struct TodoList {
+    inner: HashMap<u64, TodoEntity>,
+    current_id: u64,
+}
 
 #[derive(Clone, Default)]
 pub struct TodoRepositoryForMemory {
@@ -42,8 +49,27 @@ pub struct TodoRepositoryForMemory {
 }
 
 impl TodoRepository for TodoRepositoryForMemory {
-    fn get_todo_list(&self) -> Vec<Todo> {
+    fn all(&self) -> Vec<TodoEntity> {
         let store = self.store.read().unwrap();
-        store.values().cloned().collect()
+        store.inner.values().cloned().collect()
+    }
+
+    fn find(&self, id: u64) -> Option<TodoEntity> {
+        let store = self.store.read().unwrap();
+        store.inner.get(&id).cloned()
+    }
+
+    fn create(&self, text: String) -> TodoEntity {
+        let mut store = self.store.write().unwrap();
+        let id = store.current_id;
+        let todo = TodoEntity::new(id, text);
+        store.inner.insert(id, todo.clone());
+        store.current_id += 1;
+        todo
+    }
+
+    fn delete(&self, id: u64) -> Option<()> {
+        let mut store = self.store.write().unwrap();
+        store.inner.remove(&id).map(|_| ())
     }
 }

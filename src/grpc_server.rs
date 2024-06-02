@@ -1,6 +1,7 @@
-use crate::todo_db::{self, TodoRepository, TodoRepositoryForMemory};
-
-use super::anthropic::generate_sentences;
+use crate::{
+    anthropic::generate_sentences,
+    todo_db::{StatusVO, TodoEntity, TodoRepository, TodoRepositoryForMemory},
+};
 use tonic::{transport::Server, Request, Response, Status};
 
 mod sentence {
@@ -17,7 +18,8 @@ use sentence::{
 };
 use todo::{
     todo_service_server::{TodoService, TodoServiceServer},
-    GetTodoListReply, GetTodoListRequest, TodoItem,
+    AllTodoReply, AllTodoRequest, CreateTodoReply, CreateTodoRequest, DeleteTodoReply,
+    DeleteTodoRequest, FindTodoReply, FindTodoRequest, TodoItem,
 };
 
 #[derive(Debug)]
@@ -53,6 +55,17 @@ impl SentenceService for MySentenceService {
     }
 }
 
+fn todo_entity_to_proto(todo: &TodoEntity) -> TodoItem {
+    TodoItem {
+        id: todo.id,
+        text: todo.text.clone(),
+        status: match todo.status() {
+            StatusVO::Todo => 0,
+            StatusVO::Done => 1,
+        },
+    }
+}
+
 #[derive(Debug)]
 struct MyTodoService<R>
 where
@@ -75,25 +88,48 @@ impl<R> TodoService for MyTodoService<R>
 where
     R: TodoRepository,
 {
-    async fn get_todo_list(
+    async fn all(
         &self,
-        _request: Request<GetTodoListRequest>,
-    ) -> Result<Response<GetTodoListReply>, Status> {
-        let todo_list = self.todo_repository.get_todo_list();
+        _request: Request<AllTodoRequest>,
+    ) -> Result<Response<AllTodoReply>, Status> {
+        let todo_list = self.todo_repository.all();
 
-        Ok(Response::new(GetTodoListReply {
-            items: todo_list
-                .iter()
-                .map(|todo| TodoItem {
-                    id: todo.id,
-                    text: todo.text.clone(),
-                    status: match todo.status() {
-                        todo_db::Status::Todo => 0,
-                        todo_db::Status::Done => 1,
-                    },
-                })
-                .collect(),
+        Ok(Response::new(AllTodoReply {
+            items: todo_list.iter().map(todo_entity_to_proto).collect(),
         }))
+    }
+
+    async fn find(
+        &self,
+        request: Request<FindTodoRequest>,
+    ) -> Result<Response<FindTodoReply>, Status> {
+        let Some(todo) = self.todo_repository.find(request.into_inner().id) else {
+            return Err(Status::not_found("The specified todo was not found"));
+        };
+        Ok(Response::new(FindTodoReply {
+            todo: Some(todo_entity_to_proto(&todo)),
+        }))
+    }
+
+    async fn create(
+        &self,
+        request: Request<CreateTodoRequest>,
+    ) -> Result<Response<CreateTodoReply>, Status> {
+        Ok(Response::new(CreateTodoReply {
+            todo: Some(todo_entity_to_proto(
+                &self.todo_repository.create(request.into_inner().text),
+            )),
+        }))
+    }
+
+    async fn delete(
+        &self,
+        request: Request<DeleteTodoRequest>,
+    ) -> Result<Response<DeleteTodoReply>, Status> {
+        let Some(_) = self.todo_repository.delete(request.into_inner().id) else {
+            return Err(Status::not_found("The specified todo was not found"));
+        };
+        Ok(Response::new(DeleteTodoReply {}))
     }
 }
 

@@ -12,13 +12,39 @@ message TodoItem {
     Status status = 3;
 }
 
-message GetTodoListRequest {
+message AllTodoRequest {
 }
 
-message GetTodoListReply {
+message AllTodoReply {
     repeated TodoItem items = 1;
 }
 
+message FindTodoRequest {
+    uint64 id = 1;
+}
+
+message FindTodoReply {
+    TodoItem todo = 1;
+}
+
+message CreateTodoRequest {
+    string text = 1;
+}
+
+message CreateTodoReply {
+    TodoItem todo = 1;
+}
+
+message DeleteTodoRequest {
+    uint64 id = 1;
+}
+
+message DeleteTodoReply {
+}
+
 service TodoService {
-    rpc GetTodoList(GetTodoListRequest) returns (GetTodoListReply);
+    rpc All(AllTodoRequest) returns (AllTodoReply);
+    rpc Find(FindTodoRequest) returns (FindTodoReply);
+    rpc Create(CreateTodoRequest) returns (CreateTodoReply);
+    rpc Delete(DeleteTodoRequest) returns (DeleteTodoReply);
 }
