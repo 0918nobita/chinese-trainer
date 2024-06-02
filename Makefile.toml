@@ -7,7 +7,11 @@ cwd = "./nextjs"
 script = "npm run dev"
 
 [tasks.backend-serve]
-script = "cargo run -- serve"
+script = '''
+sqlx db create
+sqlx migrate run
+cargo watch -x 'run -- serve'
+'''
 
 [tasks.serve]
 run_task = { name = ["nextjs-serve", "backend-serve"], parallel = true }

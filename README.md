@@ -10,6 +10,8 @@ Anthropic Messages API を用いて例文を生成することができます。
 - [direnv](https://github.com/direnv/direnv)
 - [asdf](https://asdf-vm.com/) or [mise](https://mise.jdx.dev/)
 - [gRPC UI](https://github.com/fullstorydev/grpcui)
+- [cargo-watch](https://github.com/watchexec/cargo-watch)
+- [sqlx](https://github.com/launchbadge/sqlx)
 - Anthropic の API キー
 
 ``.env`` :
