@@ -1,0 +1,24 @@
+syntax = "proto3";
+package todo;
+
+enum Status {
+    TODO = 0;
+    DONE = 1;
+}
+
+message TodoItem {
+    uint64 id = 1;
+    string text = 2;
+    Status status = 3;
+}
+
+message GetTodoListRequest {
+}
+
+message GetTodoListReply {
+    repeated TodoItem items = 1;
+}
+
+service TodoService {
+    rpc GetTodoList(GetTodoListRequest) returns (GetTodoListReply);
+}

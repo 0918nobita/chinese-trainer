@@ -6,7 +6,10 @@ Anthropic Messages API を用いて例文を生成することができます。
 
 ## 準備
 
-実行するには Anthropic の API キーが必要です。
+- Rust
+- direnv
+- asdf or mise
+- Anthropic の API キー
 
 ``.env`` :
 
@@ -19,24 +22,23 @@ ANTHROPIC_API_KEY=...
 direnv allow
 ```
 
-## 実行
-
-### 例文を生成する
+## 例文を生成する
 
 ```bash
 # 指定した単語を用いた例文を３つ生成する
 cargo run -- generate "如果"
 ```
 
-### gRPC サーバを起動する
+## Next.js, gRPC サーバを起動する
 
 ```bash
-cargo run -- serve
+makers serve
+```
 
-# 別のセッションで実行する
-grpcurl -plaintext \
-    -import-path ./proto \
-    -proto sentence.proto \
-    -d '{"word": "但是"}' \
-    "[::]:50051" sentence.SentenceService/Generate
+## gRPC Web UI を起動する
+
+ブラウザ上で gRPC サーバの動作確認ができます。
+
+```
+makers grpcui
 ```

@@ -1,0 +1,23 @@
+[tasks.install]
+cwd = "./nextjs"
+script = "npm install"
+
+[tasks.nextjs-serve]
+cwd = "./nextjs"
+script = "npm run dev"
+
+[tasks.backend-serve]
+script = "cargo run -- serve"
+
+[tasks.serve]
+run_task = { name = ["nextjs-serve", "backend-serve"], parallel = true }
+
+[tasks.grpcui]
+command = "grpcui"
+args = [
+    "-plaintext",
+    "-import-path", "./proto",
+    "-proto", "sentence.proto",
+    "-proto", "todo.proto",
+    "localhost:50051",
+]
